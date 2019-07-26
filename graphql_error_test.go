@@ -14,7 +14,7 @@ import (
 
 type testCase struct {
 	errBody string
-	errType AppsyncErrorType
+	errType string
 }
 
 func (tc testCase) run(is *is.I) {
@@ -31,17 +31,17 @@ func (tc testCase) run(is *is.I) {
 	var responseData map[string]interface{}
 	err := client.Run(ctx, &Request{q: "query {}"}, &responseData)
 	is.True(err != nil)
-	is.Equal(AppsyncErr(err), tc.errType)
+	is.Equal(ErrorType(err), tc.errType)
 }
 
 func TestAppsyncErr(t *testing.T) {
 	is := is.New(t)
 
 	for _, tc := range []testCase{
-		{`{"message": "error", "errorType": "UnauthorizedException"}`, ErrAppsyncUnauthorized},
-		{`{"message": "error", "errorType": "UnknownOperationException"}`, ErrAppsyncUnknownOperation},
-		{`{"message": "error", "errorType": "foobar"}`, ErrAppsyncUnknown},
-		{`{"message": "error"}`, ErrAppsyncUnknown},
+		{`{"message": "error", "errorType": "UnauthorizedException"}`, ErrTypeUnauthorized},
+		{`{"message": "error", "errorType": "UnknownOperationException"}`, ErrTypeUnknownOperation},
+		{`{"message": "error", "errorType": "foobar"}`, "foobar"},
+		{`{"message": "error"}`, ""},
 	} {
 		tc.run(is)
 	}

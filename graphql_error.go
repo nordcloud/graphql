@@ -1,16 +1,8 @@
 package graphql
 
 const (
-	ErrorTypeUnauthorized     string = "UnauthorizedException"
-	ErrorTypeUnknownOperation string = "UnknownOperationException"
-)
-
-type AppsyncErrorType uint32
-
-const (
-	ErrAppsyncUnknown AppsyncErrorType = iota
-	ErrAppsyncUnauthorized
-	ErrAppsyncUnknownOperation
+	ErrTypeUnauthorized     string = "UnauthorizedException"
+	ErrTypeUnknownOperation string = "UnknownOperationException"
 )
 
 type GraphQLError struct {
@@ -29,20 +21,11 @@ func (e GraphQLError) Type() string {
 	return *e.ErrorType
 }
 
-func AppsyncErr(err error) AppsyncErrorType {
+func ErrorType(err error) string {
 	gqlErr, ok := err.(GraphQLError)
 	if !ok {
-		return ErrAppsyncUnknown
+		return ""
 	}
 
-	if gqlErr.ErrorType != nil {
-		switch *gqlErr.ErrorType {
-		case ErrorTypeUnauthorized:
-			return ErrAppsyncUnauthorized
-		case ErrorTypeUnknownOperation:
-			return ErrAppsyncUnknownOperation
-		}
-	}
-
-	return ErrAppsyncUnknown
+	return gqlErr.Type()
 }

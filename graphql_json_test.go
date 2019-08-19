@@ -21,6 +21,7 @@ func TestDoJSON(t *testing.T) {
 		b, err := ioutil.ReadAll(r.Body)
 		is.NoErr(err)
 		is.Equal(string(b), `{"query":"query {}","variables":null}`+"\n")
+		is.Equal(r.Header.Get("Cache-Control"), "no-cache")
 		io.WriteString(w, `{
 			"data": {
 				"something": "yes"
@@ -35,9 +36,18 @@ func TestDoJSON(t *testing.T) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 	var responseData map[string]interface{}
-	err := client.Run(ctx, &Request{q: "query {}"}, &responseData)
+	r := NewRequest("query {}")
+	r.Header.Set("Cache-Control", "no-cache")
+	err := client.Run(ctx, r, &responseData)
 	is.NoErr(err)
 	is.Equal(calls, 1) // calls
+	is.Equal(responseData["something"], "yes")
+	client.SetBeforeRequest(func(req *http.Request) {
+		req.Header.Set("Cache-Control", "no-cache")
+	})
+	err = client.Run(ctx, &Request{q: "query {}"}, &responseData)
+	is.NoErr(err)
+	is.Equal(calls, 2)
 	is.Equal(responseData["something"], "yes")
 }
 

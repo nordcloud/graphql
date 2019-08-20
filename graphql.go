@@ -56,7 +56,8 @@ type Client struct {
 	//  client.Log = func(s string) { log.Println(s) }
 	Log func(s string)
 
-	beforeRequest func(req *http.Request)
+	// BeforeRequest is a function that runs directly before making request.
+	BeforeRequest func(req *http.Request)
 }
 
 // NewClient makes a new Client capable of making GraphQL requests.
@@ -72,11 +73,6 @@ func NewClient(endpoint string, opts ...ClientOption) *Client {
 		c.httpClient = http.DefaultClient
 	}
 	return c
-}
-
-// SetBeforeRequest sets function that runs before request.
-func (c *Client) SetBeforeRequest(f func(req *http.Request)) {
-	c.beforeRequest = f
 }
 
 func (c *Client) logf(format string, args ...interface{}) {
@@ -134,8 +130,8 @@ func (c *Client) runWithJSON(ctx context.Context, req *Request, resp interface{}
 	}
 	c.logf(">> headers: %v", r.Header)
 	r = r.WithContext(ctx)
-	if c.beforeRequest != nil {
-		c.beforeRequest(r)
+	if c.BeforeRequest != nil {
+		c.BeforeRequest(r)
 	}
 	res, err := c.httpClient.Do(r)
 	if err != nil {

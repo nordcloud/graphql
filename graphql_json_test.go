@@ -42,9 +42,9 @@ func TestDoJSON(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(calls, 1) // calls
 	is.Equal(responseData["something"], "yes")
-	client.SetBeforeRequest(func(req *http.Request) {
+	client.BeforeRequest = func(req *http.Request) {
 		req.Header.Set("Cache-Control", "no-cache")
-	})
+	}
 	err = client.Run(ctx, &Request{q: "query {}"}, &responseData)
 	is.NoErr(err)
 	is.Equal(calls, 2)
